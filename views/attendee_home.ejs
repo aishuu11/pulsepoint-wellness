@@ -1,0 +1,156 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header page-header--soft">
+    <div class="container">
+        <p class="eyebrow">Class schedule</p>
+        <h1 class="page-title">Attendee Home Page</h1>
+        <p class="page-lead page-lead--feature">Train your way.</p>
+        <p class="page-lead"><%= siteSettings && siteSettings.name ? siteSettings.name : 'PulsePoint Wellness' %> — <%= siteSettings && siteSettings.description ? siteSettings.description : 'Strength, movement and recovery for every body.' %></p>
+        <p class="page-lead">Book strength, conditioning, yoga and recovery sessions in seconds.</p>
+        <% if (typeof authMessage !== 'undefined' && authMessage) { %>
+            <div class="alert alert-error"><%= authMessage %></div>
+        <% } %>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="attendee-layout">
+            <div class="attendee-main">
+                <% if (events.length === 0) { %>
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="5" r="2.5"/>
+                                <path d="M12 8v6"/>
+                                <path d="M9 11l3 3 3-3"/>
+                            </svg>
+                        </div>
+                        <h3>No classes scheduled</h3>
+                        <p>Please check back soon &mdash; new sessions are added regularly.</p>
+                    </div>
+                <% } else { %>
+                    <div class="attendee-filter-bar">
+                        <form method="GET" action="/attendee" class="filter-form">
+                            <div class="filter-field">
+                                <label for="date_from">From</label>
+                                <input type="date" id="date_from" name="date_from" value="<%= typeof dateFrom !== 'undefined' ? dateFrom : '' %>">
+                            </div>
+                            <div class="filter-field">
+                                <label for="date_to">To</label>
+                                <input type="date" id="date_to" name="date_to" value="<%= typeof dateTo !== 'undefined' ? dateTo : '' %>">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Show dates</button>
+                        </form>
+                        <p class="filter-description">Pick a date range to view only the events happening in that window.</p>
+                    </div>
+
+                    <div class="event-grid">
+                        <% events.forEach(function(event, index) { %>
+                            <article class="event-card event-card--published">
+                                <% if (event.image_data) { %>
+                                    <div class="event-card-image event-card-image--uploaded"><img src="<%= event.image_data %>" alt="<%= event.title %>"></div>
+                                <% } else { %>
+                                    <div class="event-card-image event-card-image--<%= index % 4 %>" aria-hidden="true"></div>
+                                <% } %>
+                                <div class="event-card-head">
+                                    <div class="event-card-head-copy">
+                                        <span class="event-date"><%= formatDateDisplay(event.event_date) %></span>
+                                        <% if (event.event_time) { %><span class="event-time"><%= event.event_time %></span><% } %>
+                                    </div>
+                                    <span class="status-pill status-pill--<%= event.availabilityTone %>"><%= event.availabilityLabel %></span>
+                                </div>
+
+                                <h3 class="event-card-title"><%= event.title %></h3>
+                                <p class="event-card-desc"><%= event.description ? event.description.substring(0, 140) : 'Join us for a memorable live event.' %><%= event.description && event.description.length > 140 ? '...' : '' %></p>
+
+                                <div class="event-card-details">
+                                    <% if (event.location) { %>
+                                        <span class="event-card-detail"><%= event.location %></span>
+                                    <% } %>
+                                    <% if (event.duration_minutes) { %>
+                                        <span class="event-card-detail"><%= (event.duration_minutes / 60).toFixed(1).replace(/\.0$/, '') %> hr</span>
+                                    <% } %>
+                                </div>
+
+                                <div class="event-card-progress">
+                                    <div class="event-card-progress-label">
+                                        <span>Tickets sold</span>
+                                        <strong><%= event.popularityScore %> / <%= event.totalCapacity %></strong>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill" style="width:<%= event.totalCapacity > 0 ? Math.round((event.popularityScore / event.totalCapacity) * 100) : 0 %>%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="event-card-pricing">
+                                    <% if (event.full_price_tickets > 0) { %>
+                                        <span class="price-tag">Full SGD $<%= event.full_price_cost.toFixed(2) %></span>
+                                    <% } %>
+                                    <% if (event.concession_tickets > 0) { %>
+                                        <span class="price-tag">Concession SGD $<%= event.concession_cost.toFixed(2) %></span>
+                                    <% } %>
+                                </div>
+
+                                <div class="event-card-actions">
+                                    <a href="/attendee/events/<%= event.id %>" class="btn btn-sm btn-primary"><%= event.isFullyBooked ? 'View waitlist' : 'View class' %></a>
+                                    <% if (currentAttendee) { %>
+                                        <% if (event.isWishlisted) { %>
+                                            <form action="/attendee/events/<%= event.id %>/wishlist/remove" method="POST" class="wishlist-form">
+                                                <button type="submit" class="btn btn-sm btn-wishlist btn-wishlist--saved" aria-label="Remove <%= event.title %> from wishlist">♥ Saved</button>
+                                            </form>
+                                        <% } else { %>
+                                            <form action="/attendee/events/<%= event.id %>/wishlist" method="POST" class="wishlist-form">
+                                                <button type="submit" class="btn btn-sm btn-wishlist" aria-label="Save <%= event.title %> to wishlist">♡ Save</button>
+                                            </form>
+                                        <% } %>
+                                    <% } else { %>
+                                        <a href="/attendee/login" class="btn btn-sm btn-wishlist">♡ Sign in to save</a>
+                                    <% } %>
+                                </div>
+                            </article>
+                        <% }) %>
+                    </div>
+                <% } %>
+            </div>
+
+            <aside class="attendee-side">
+                    <div class="side-card">
+                        <h3 class="side-card-title">Member access</h3>
+                        <% if (currentAttendee) { %>
+                            <p class="side-card-text">Signed in as <strong><%= currentAttendee.name %></strong>.</p>
+                            <a href="/attendee/dashboard" class="btn btn-sm btn-primary btn-block">Open dashboard</a>
+                        <% } else { %>
+                            <p class="side-card-text">Sign in to save bookings and view your personal attendee dashboard.</p>
+                            <a href="/attendee/login" class="btn btn-sm btn-primary btn-block">Sign in / register</a>
+                            <form action="/attendee/guest" method="POST" class="guest-form">
+                                <button type="submit" class="btn btn-sm btn-ghost btn-block">Continue as guest</button>
+                            </form>
+                        <% } %>
+                    </div>
+
+                    <div class="side-card">
+                        <h3 class="side-card-title">Trending classes</h3>
+                        <p class="side-card-text">Ranked by confirmed occupancy. Classes with no ticket sales are not labelled trending.</p>
+                        <% if (popularEvents && popularEvents.length > 0) { %>
+                            <% popularEvents.forEach(function(event) { %>
+                                <a class="popular-card" href="/attendee/events/<%= event.id %>">
+                                    <div class="popular-card-copy">
+                                        <strong><%= event.title %></strong>
+                                        <span><%= event.availableSeats === 0 ? 'Sold out' : event.availabilityLabel %></span>
+                                    </div>
+                                    <div class="popular-card-badge"><%= event.availableSeats === 0 ? 'Sold out' : event.availableSeats + ' left' %></div>
+                                </a>
+                            <% }) %>
+                        <% } else { %>
+                            <p class="empty-inline">No trending class yet. A class appears here after its first confirmed booking.</p>
+                        <% } %>
+                    </div>
+                </aside>
+        </div>
+    </div>
+</section>
+
+<%- include('footer') %>

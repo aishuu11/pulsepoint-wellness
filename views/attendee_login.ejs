@@ -1,0 +1,55 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header">
+    <div class="container">
+        <p class="eyebrow">Attendee Access</p>
+        <h1 class="page-title">Sign in to your attendee account</h1>
+        <p class="page-lead">Access your saved bookings and personal event history.</p>
+        <% if (error) { %>
+            <div class="alert alert-error"><%= error %></div>
+        <% } %>
+        <% if (success) { %>
+            <div class="alert alert-success"><%= success %></div>
+        <% } %>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container auth-grid">
+        <div class="form-card">
+            <h2 class="section-title">Sign in</h2>
+            <form action="/attendee/login" method="POST">
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                </div>
+            </form>
+
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 0.5rem;"><strong>Sample account for testing:</strong></p>
+                <p style="font-size: 0.85rem; color: #666; margin: 0.25rem 0;"><strong>Email:</strong> attendee@example.com</p>
+                <p style="font-size: 0.85rem; color: #666; margin: 0.25rem 0;"><strong>Password:</strong> EventFlow123!</p>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h2 class="section-title">Create an account</h2>
+            <p class="form-card-text">Create an attendee account to save your bookings and keep track of upcoming events.</p>
+            <a href="/attendee/register" class="btn btn-ghost btn-block">Create New Account</a>
+            <form action="/attendee/guest" method="POST" class="guest-form">
+                <button type="submit" class="btn btn-ghost btn-block">Continue as Guest</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<%- include('footer') %>

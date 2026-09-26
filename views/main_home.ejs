@@ -1,0 +1,156 @@
+<%- include('head') %>
+<body class="home">
+<%- include('nav') %>
+
+<main class="home-page">
+    <section class="home-hero reveal-on-scroll">
+        <div class="home-hero__bg" aria-hidden="true">
+            <span class="shape shape--one"></span>
+            <span class="shape shape--two"></span>
+            <span class="shape shape--three"></span>
+        </div>
+
+        <div class="container home-hero__inner">
+            <div class="home-hero__copy">
+                <p class="home-hero__eyebrow">Move with purpose</p>
+                <h1 class="home-hero__title">Find your power. Own your pace.</h1>
+                <p class="home-hero__subtitle">Strength, conditioning, yoga and recovery sessions led by coaches who meet you where you are.</p>
+                <div class="home-hero__actions">
+                    <a href="/attendee" class="btn btn-primary">Attendee Home Page</a>
+                    <a href="/organiser" class="btn btn-ghost">Organiser Home Page</a>
+                </div>
+            </div>
+
+            <div class="home-hero__visual" aria-hidden="true">
+                <div class="event-stack">
+                    <div class="event-stack__card event-stack__card--main">
+                        <p class="event-stack__label">Next up · 18:30</p>
+                        <h3>Power Circuit 45</h3>
+                        <p>Strength Lab · Coach-led · All levels</p>
+                    </div>
+                    <div class="event-stack__card event-stack__card--secondary">
+                        <p class="event-stack__label">Member booking</p>
+                        <div class="ticket-chip">Your spot is secured</div>
+                    </div>
+                    <div class="event-stack__card event-stack__card--accent">
+                        <p class="event-stack__label">Class capacity</p>
+                        <div class="mini-progress"><span></span></div>
+                        <p>18 of 24 places booked</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section reveal-on-scroll">
+        <div class="container">
+            <div class="section-heading">
+                <p class="section-kicker">Train. Recover. Repeat.</p>
+                <h2>Everything your movement needs</h2>
+            </div>
+
+            <div class="journey-grid">
+                <article class="journey-card">
+                    <div class="journey-card__top">
+                        <span class="journey-icon">✦</span>
+                        <h3>Classes that challenge you</h3>
+                    </div>
+                    <p>Choose from coached strength, high-energy cardio and performance sessions for every level.</p>
+                    <div class="chip-row">
+                        <span class="chip">Strength</span>
+                        <span class="chip">HIIT</span>
+                        <span class="chip">Cycle</span>
+                        <span class="chip">Small groups</span>
+                    </div>
+                    <a href="/attendee" class="journey-link">View the schedule</a>
+                </article>
+
+                <article class="journey-card journey-card--accent">
+                    <div class="journey-card__top">
+                        <span class="journey-icon">✧</span>
+                        <h3>Recovery that moves you forward</h3>
+                    </div>
+                    <p>Build mobility, restore energy and reset with mindful sessions designed around real bodies.</p>
+                    <div class="chip-row">
+                        <span class="chip">Yoga flow</span>
+                        <span class="chip">Mobility</span>
+                        <span class="chip">Breathwork</span>
+                        <span class="chip">Recovery</span>
+                    </div>
+                    <a href="/attendee" class="journey-link">Find your reset</a>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section home-section--soft reveal-on-scroll">
+        <div class="container">
+            <div class="section-heading">
+                <p class="section-kicker">How it works</p>
+                <h2>Your next session is four moves away</h2>
+            </div>
+
+            <div class="flow-track" aria-label="PulsePoint class booking steps">
+                <article class="flow-step">
+                    <div class="flow-step__badge">1</div>
+                    <h3>Explore</h3>
+                    <p>Browse strength, conditioning and recovery classes.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="flow-step__badge">2</div>
+                    <h3>Choose</h3>
+                    <p>Find the time, intensity and coach that suit you.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="flow-step__badge">3</div>
+                    <h3>Book</h3>
+                    <p>Reserve your place with a quick, focused checkout.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="flow-step__badge">4</div>
+                    <h3>Move</h3>
+                    <p>Show your confirmation and arrive ready to train.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section reveal-on-scroll">
+        <div class="container">
+            <div class="section-heading">
+                <p class="section-kicker">Built around you</p>
+                <h2>More momentum. Less friction.</h2>
+            </div>
+
+            <div class="feature-showcase">
+                <article class="home-feature-card">
+                    <h3>Flexible booking</h3>
+                    <p>See live availability, choose your rate and secure your class in a few clear steps.</p>
+                </article>
+                <article class="home-feature-card">
+                    <h3>Ready at check-in</h3>
+                    <p>Every booking includes an instant reference and scannable confirmation.</p>
+                </article>
+                <article class="home-feature-card">
+                    <h3>Studio intelligence</h3>
+                    <p>Coaches can manage the schedule, bookings and class performance from one focused workspace.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section reveal-on-scroll">
+        <div class="container">
+            <div class="home-cta">
+                <h2>Your strongest routine starts here.</h2>
+                <p>Pick a class, claim your place and bring the energy. We will handle the rest.</p>
+                <div class="home-hero__actions home-hero__actions--centered">
+                    <a href="/attendee" class="btn btn-primary">Attendee Home Page</a>
+                    <a href="/organiser" class="btn btn-ghost">Organiser Home Page</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<%- include('footer') %>

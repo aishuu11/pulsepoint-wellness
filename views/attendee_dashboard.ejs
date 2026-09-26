@@ -1,0 +1,186 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header page-header--soft">
+    <div class="container">
+        <p class="eyebrow">Personal Attendee Area</p>
+        <h1 class="page-title">Attendee Dashboard</h1>
+        <p class="page-lead page-lead--feature">Welcome back, <%= attendee.name %>.</p>
+        <p class="page-lead">Here are your bookings and upcoming plans.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <% if (typeof query !== 'undefined' && query.success === 'cancelled') { %>
+            <div class="alert alert--success">Booking cancelled and tickets returned to inventory.</div>
+        <% } %>
+
+        <div class="attendee-dashboard-layout">
+            <div class="attendee-dashboard-main">
+                <div class="dashboard-panel dashboard-panel--stacked">
+                    <div class="page-header__content">
+                        <div>
+                            <h2 class="section-title">Your bookings</h2>
+                            <p class="section-copy">All tickets booked through your attendee account appear here.</p>
+                        </div>
+                        <a href="/attendee" class="btn btn-ghost">Browse events</a>
+                    </div>
+
+                    <% if (bookings.length === 0) { %>
+                        <div class="empty-state empty-state--compact">
+                            <h3>No bookings yet</h3>
+                            <p>Your personal booking history will appear here once you reserve tickets.</p>
+                        </div>
+                    <% } else { %>
+                        <div class="table-card attendee-table-card">
+                            <table class="data-table attendee-booking-table">
+                                <thead>
+                                    <tr>
+                                        <th>Booking ID</th>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Tickets</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% bookings.forEach(function(booking) { %>
+                                        <tr>
+                                            <td>
+                                                <strong><%= booking.booking_reference || ('BK-' + String(booking.id).padStart(6, '0')) %></strong><br>
+                                                <span class="muted">#<%= booking.id %></span>
+                                            </td>
+                                            <td>
+                                                <strong><%= booking.event_title %></strong><br>
+                                                <span class="muted"><%= booking.location || 'Location TBC' %></span>
+                                            </td>
+                                            <td>
+                                                <%= formatDateDisplay(booking.event_date) %><br>
+                                                <span class="muted"><%= booking.event_time || 'Time TBC' %></span>
+                                            </td>
+                                            <td><%= booking.full_price_qty + booking.concession_qty %> tickets</td>
+                                            <td>
+                                                <span class="status-pill status-pill--<%= booking.status === 'confirmed' ? 'success' : 'danger' %>"><%= booking.status %></span>
+                                                <% if (booking.status === 'confirmed') { %>
+                                                    <form action="/attendee/bookings/<%= booking.id %>/cancel" method="POST" style="display:inline;margin-left:8px">
+                                                        <button type="submit" class="btn btn-danger-ghost btn-sm">Cancel</button>
+                                                    </form>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+        </div>
+
+        <section class="wishlist-panel dashboard-panel">
+            <div class="page-header__content">
+                <div>
+                    <p class="eyebrow">Saved for later</p>
+                    <h2 class="section-title">Your wishlist</h2>
+                    <p class="section-copy">Wishlist saves are personal reminders, not bookings. Remove one here or open the class when you are ready.</p>
+                </div>
+                <a href="/attendee" class="btn btn-primary">Browse classes</a>
+            </div>
+            <% if (wishlistEvents && wishlistEvents.length > 0) { %>
+                <div class="wishlist-grid">
+                    <% wishlistEvents.forEach(function(event) { %>
+                        <article class="wishlist-card">
+                            <div>
+                                <span class="status-pill status-pill--success">Saved</span>
+                                <h3><%= event.title %></h3>
+                                <p><%= formatDateDisplay(event.event_date) %> · <%= event.event_time || 'Time TBC' %></p>
+                                <p><%= event.location || 'Location TBC' %></p>
+                            </div>
+                            <div class="wishlist-card__actions">
+                                <a href="/attendee/events/<%= event.event_id %>" class="btn btn-sm btn-primary">View class</a>
+                                <form action="/attendee/events/<%= event.event_id %>/wishlist/remove" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-ghost">Remove</button>
+                                </form>
+                            </div>
+                        </article>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <div class="empty-state empty-state--compact">
+                    <h3>Your wishlist is empty</h3>
+                    <p>Use the “Save” button on any event card to keep it here.</p>
+                </div>
+            <% } %>
+        </section>
+
+        <% if (waitlistEntries && waitlistEntries.length > 0) { %>
+            <section class="waitlist-panel dashboard-panel">
+                <div class="page-header__content">
+                    <div>
+                        <h2 class="section-title">Your waitlist</h2>
+                        <p class="section-copy">Queue positions and automatic promotions appear here.</p>
+                    </div>
+                </div>
+                <div class="waitlist-grid">
+                    <% waitlistEntries.forEach(function(entry) { %>
+                        <article class="waitlist-card">
+                            <div>
+                                <span class="status-pill status-pill--<%= entry.status === 'promoted' ? 'success' : 'limited' %>"><%= entry.status %></span>
+                                <h3><%= entry.event_title %></h3>
+                                <p><%= formatDateDisplay(entry.event_date) %> · <%= entry.event_time || 'Time TBC' %></p>
+                            </div>
+                            <% if (entry.status === 'waiting') { %>
+                                <strong class="waitlist-position">Position <%= entry.position %></strong>
+                            <% } else if (entry.status === 'promoted') { %>
+                                <a href="/attendee/dashboard" class="journey-link">Confirmed: <%= entry.booking_reference %></a>
+                            <% } %>
+                        </article>
+                    <% }) %>
+                </div>
+            </section>
+        <% } %>
+
+        <section class="attendee-calendar-section">
+            <div class="calendar-width-wrap">
+                <div class="side-card side-card--calendar attendee-calendar-card-full">
+                    <div class="section-head section-head--tight">
+                        <div>
+                            <h3 class="section-title">My calendar</h3>
+                            <p class="section-copy">Your next booked date: <strong><%= nextBookingLabel %></strong></p>
+                        </div>
+                    </div>
+                    <div class="calendar-card calendar-card--attendee calendar-card--fullwidth">
+                        <div class="calendar-card__head calendar-card__head--controls">
+                            <div>
+                                <p class="kpi-card__eyebrow">Personal bookings</p>
+                                <h3><%= calendarMonthLabel %></h3>
+                            </div>
+                        </div>
+                        <div class="mini-calendar mini-calendar--attendee" id="attendee-calendar">
+                            <% ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].forEach(function(label) { %>
+                                <span class="mini-calendar__label"><%= label %></span>
+                            <% }) %>
+                            <% calendarDays.forEach(function(day) { %>
+                                <% const dayEvents = (day.events || []); %>
+                                <button type="button" class="mini-calendar__day mini-calendar__day--button <%= day.isCurrentMonth ? '' : 'mini-calendar__day--muted' %>" data-calendar-day data-calendar-date="<%= day.dateKey %>" data-calendar-label="<%= formatDateDisplay(day.dateKey) %>" data-calendar-events="<%= encodeURIComponent(JSON.stringify(dayEvents)) %>" aria-pressed="false">
+                                    <span class="mini-calendar__day-number"><%= day.day %></span>
+                                    <% if (day.dotType) { %>
+                                        <span class="mini-calendar__dot mini-calendar__dot--<%= day.dotType %>" aria-hidden="true"></span>
+                                    <% } %>
+                                </button>
+                            <% }) %>
+                        </div>
+                        <div class="calendar-detail-panel" data-calendar-detail>
+                            <p class="calendar-detail-panel__hint">Tap a booked dot to see the event and time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</section>
+
+<%- include('footer') %>

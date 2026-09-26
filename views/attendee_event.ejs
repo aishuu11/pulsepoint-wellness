@@ -1,0 +1,192 @@
+<%- include('head') %>
+<body class="attendee-event-page">
+<%- include('nav') %>
+
+<section class="event-hero <%= event.image_data ? 'event-hero--with-image' : '' %>">
+    <div class="container event-hero-layout">
+        <div>
+            <a href="/attendee" class="back-link">&larr; Back to Attendee Home Page</a>
+            <p class="eyebrow">Attendee Event Page</p>
+            <h1 class="event-hero-title"><%= event.title %></h1>
+            <div class="event-hero-meta">
+                <% if (event.event_date) { %><span><%= formatDateDisplay(event.event_date) %></span><% } %>
+                <% if (event.event_time) { %><span><%= event.event_time %></span><% } %>
+                <% if (event.location) { %><span><%= event.location %></span><% } %>
+            </div>
+        </div>
+        <% if (event.image_data) { %>
+            <figure class="event-hero-photo"><img src="<%= event.image_data %>" alt="<%= event.title %>"></figure>
+        <% } %>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+                <form id="bookingForm" action="/attendee/events/<%= event.id %>/book" method="POST" class="event-booking-form">
+                    <div class="event-detail-layout">
+                        <div class="event-detail-main">
+                            <section class="event-overview-card">
+                                <p class="booking-step-label">Class overview</p>
+                                <h2 class="section-title">About this event</h2>
+                                <p class="event-detail-desc"><%= event.description ? event.description : 'Details about this event will be added soon.' %></p>
+
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Date</span>
+                                        <span class="info-value"><%= formatDateDisplay(event.event_date) %></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Time</span>
+                                        <span class="info-value"><%= event.event_time ? event.event_time : 'TBC' %></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Location</span>
+                                        <span class="info-value"><%= event.location ? event.location : 'TBC' %></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Booking deadline</span>
+                                        <span class="info-value"><%= event.booking_deadline ? formatDateTimeDisplay(event.booking_deadline) : 'Until the session starts' %></span>
+                                    </div>
+                                </div>
+
+                                <div class="event-availability event-availability--inline">
+                                    <span>Places currently available</span>
+                                    <strong><%= availabilitySummary.remaining %> of <%= availabilitySummary.total %></strong>
+                                </div>
+                            </section>
+
+                            <div class="payment-inline-block">
+                                <p class="booking-step-label">Step 2</p>
+                                <h3 class="section-title">Payment details</h3>
+                                <p class="section-copy">Demo checkout only. Payment is simulated and stored server-side.</p>
+                                <div class="field">
+                                    <label for="payment_name">Cardholder name</label>
+                                    <input type="text" id="payment_name" name="payment_name" required placeholder="Jane Doe" value="<%= signedInName || '' %>">
+                                </div>
+
+                                <div class="field">
+                                    <label for="payment_method">Payment method</label>
+                                    <select id="payment_method" name="payment_method" required>
+                                        <option value="card">Card</option>
+                                        <option value="debit_card">Debit card</option>
+                                        <option value="credit_card">Credit card</option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label for="payment_number">Card number</label>
+                                    <input type="text" id="payment_number" name="payment_number" required inputmode="numeric" autocomplete="cc-number" maxlength="19" pattern="[\d\s]{15,19}" placeholder="4111 1111 1111 1111">
+                                </div>
+
+                                <div class="field-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                                    <div class="field">
+                                        <label for="payment_expiry">Expiry</label>
+                                        <input type="text" id="payment_expiry" name="payment_expiry" required autocomplete="cc-exp" maxlength="5" pattern="\d{2}\/\d{2}" placeholder="MM/YY">
+                                    </div>
+                                    <div class="field">
+                                        <label for="payment_cvv">CVV</label>
+                                        <input type="password" id="payment_cvv" name="payment_cvv" required inputmode="numeric" autocomplete="cc-csc" maxlength="4" pattern="\d{3,4}" placeholder="123">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <aside class="booking-card">
+                            <p class="booking-step-label">Step 1</p>
+                            <h2 class="booking-card-title">Book Your Spot</h2>
+                            <p class="booking-card-intro">Choose your ticket quantity, then complete the payment details.</p>
+
+                            <% if (typeof query !== 'undefined' && query.success === 'booked') { %>
+                                <div class="alert alert--success">Booking confirmed! We look forward to seeing you there.</div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.error === 'no_tickets') { %>
+                                <div class="alert alert--error">Please select at least one ticket.</div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.error === 'booking_failed') { %>
+                                <div class="alert alert--error">Sorry, something went wrong. Please try again.</div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.error === 'payment_invalid') { %>
+                                <div class="alert alert--error">Please complete the payment details with valid card information.</div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.error === 'invalid_quantities') { %>
+                                <div class="alert alert--error">Ticket quantities must be non-negative whole numbers.</div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.error === 'availability') { %>
+                                <div class="alert alert--error">The requested tickets are no longer available. Please choose a smaller quantity.</div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.error === 'event_unavailable') { %>
+                                <div class="alert alert--error">This event is not available for booking.</div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.error === 'deadline') { %>
+                                <div class="alert alert--error">The booking deadline for this session has passed.</div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.waitlist_error) { %>
+                                <div class="alert alert--error"><%= query.waitlist_error %></div>
+                            <% } %>
+                            <% if (typeof query !== 'undefined' && query.waitlist_success) { %>
+                                <div class="alert alert--success">You joined the waitlist at position <%= query.waitlist_success %>.</div>
+                            <% } %>
+
+                            <div class="field">
+                                <label for="attendee_name">Your Name</label>
+                                <input type="text" id="attendee_name" name="attendee_name" required placeholder="Jane Doe" value="<%= signedInName || '' %>">
+                                <% if (signedInName) { %><p class="field-hint">Prefilled from your attendee account, but you can edit the booking name.</p><% } %>
+                            </div>
+
+                            <% if (event.full_price_tickets > 0) { %>
+                            <div class="ticket-line">
+                                <div class="ticket-line-info">
+                                    <span class="ticket-line-name">Full Price</span>
+                                    <span class="ticket-line-price">SGD $<%= event.full_price_cost.toFixed(2) %></span>
+                                    <span class="ticket-line-avail"><%= event.full_price_tickets %> left</span>
+                                </div>
+                                <label class="ticket-quantity-label" for="full_price_qty">Quantity
+                                    <input type="number" id="full_price_qty" name="full_price_qty" min="0" max="<%= event.full_price_tickets %>" value="0" data-unit-price="<%= event.full_price_cost %>" class="qty-input">
+                                </label>
+                            </div>
+                            <% } %>
+
+                            <% if (event.concession_tickets > 0) { %>
+                            <div class="ticket-line">
+                                <div class="ticket-line-info">
+                                    <span class="ticket-line-name">Concession</span>
+                                    <span class="ticket-line-price">SGD $<%= event.concession_cost.toFixed(2) %></span>
+                                    <span class="ticket-line-avail"><%= event.concession_tickets %> left</span>
+                                </div>
+                                <label class="ticket-quantity-label" for="concession_qty">Quantity
+                                    <input type="number" id="concession_qty" name="concession_qty" min="0" max="<%= event.concession_tickets %>" value="0" data-unit-price="<%= event.concession_cost %>" class="qty-input">
+                                </label>
+                            </div>
+                            <% } %>
+
+                            <div class="ticket-total">
+                                <span>Total price</span>
+                                <strong id="bookingTotal">SGD $0.00</strong>
+                            </div>
+
+                            <% if (event.full_price_tickets === 0 && event.concession_tickets === 0) { %>
+                                <p class="sold-out">Tickets for this class are not available.</p>
+                                <% if (waitlistEntry && waitlistEntry.status === 'waiting') { %>
+                                    <div class="waitlist-status">
+                                        <strong>You are on the waitlist</strong>
+                                        <span>Current position: <%= waitlistEntry.position %></span>
+                                    </div>
+                                <% } else if (waitlistEntry && waitlistEntry.status === 'promoted') { %>
+                                    <div class="alert alert--success">A place became available and your waitlist entry was promoted to a confirmed booking.</div>
+                                    <a href="/attendee/dashboard" class="btn btn-primary btn-block">View confirmed booking</a>
+                                <% } else if (currentAttendee) { %>
+                                    <button type="submit" formaction="/attendee/events/<%= event.id %>/waitlist" formmethod="POST" formnovalidate class="btn btn-secondary btn-block">Join waitlist</button>
+                                    <p class="field-hint">If a place opens after a cancellation, the first waiting attendee is promoted automatically.</p>
+                                <% } else { %>
+                                    <a href="/attendee/login" class="btn btn-primary btn-block">Sign in to join waitlist</a>
+                                <% } %>
+                            <% } else { %>
+                                <button type="submit" class="btn btn-primary btn-block">Confirm Booking</button>
+                            <% } %>
+                        </aside>
+                    </div>
+                </form>
+    </div>
+</section>
+
+<%- include('footer') %>

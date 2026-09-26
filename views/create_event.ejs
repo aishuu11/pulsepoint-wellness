@@ -1,0 +1,148 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header">
+    <div class="container">
+        <p class="eyebrow">New Draft</p>
+        <h1 class="page-title">Create Event Draft</h1>
+        <p class="page-lead">Fill the event details below, then press Save Draft to keep this event as a draft.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="edit-layout">
+            <div class="edit-main">
+                <div class="form-card">
+                    <form id="event-create-form" action="/organiser/events/new" method="POST" class="event-form">
+                        <% if (typeof validationErrors !== 'undefined' && validationErrors.length > 0) { %>
+                            <div class="alert alert--error" role="alert">
+                                <strong>Please correct the following:</strong>
+                                <ul>
+                                    <% validationErrors.forEach(function(error) { %><li><%= error %></li><% }) %>
+                                </ul>
+                            </div>
+                        <% } %>
+                        <div class="field">
+                            <label for="title">Title</label>
+                            <input type="text" id="title" name="title" value="<%= event.title %>" required>
+                        </div>
+
+                    <div class="field">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="5"><%= event.description %></textarea>
+                    </div>
+
+                    <div class="field image-uploader" data-image-uploader>
+                        <label for="event_image_file">Event photo <span class="optional-label">(optional)</span></label>
+                        <div class="event-image-preview <%= event.image_data ? 'has-image' : '' %>" data-image-preview-wrap>
+                            <img src="<%= event.image_data || '' %>" alt="Event photo preview" data-image-preview <%= event.image_data ? '' : 'hidden' %>>
+                            <span data-image-placeholder <%= event.image_data ? 'hidden' : '' %>>Add a class photo to make the attendee listing more engaging.</span>
+                        </div>
+                        <input type="file" id="event_image_file" accept="image/jpeg,image/png,image/webp" data-image-input>
+                        <input type="hidden" name="image_data" value="<%= event.image_data || '' %>" data-image-data>
+                        <p class="field-note">JPG, PNG or WEBP, up to 2 MB. The photo is optional.</p>
+                        <p class="field-note image-upload-error" data-image-error aria-live="polite"></p>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="event_date">Date</label>
+                            <input type="date" id="event_date" name="event_date" value="<%= event.event_date %>">
+                        </div>
+                        <div class="field">
+                            <label for="event_time">Time</label>
+                            <input type="time" id="event_time" name="event_time" value="<%= event.event_time %>">
+                        </div>
+                    </div>
+
+                <div class="field">
+                    <label for="scheduled_publish_at">Schedule publish <span class="optional-label">(optional)</span></label>
+                    <input type="datetime-local" id="scheduled_publish_at" name="scheduled_publish_at"
+                        value="<%= event.scheduled_publish_at ? event.scheduled_publish_at.replace(' ', 'T').slice(0,16) : '' %>">
+                    <p class="field-note">Leave blank to save as draft without scheduling automatic publish.</p>
+                </div>
+
+                <div class="field">
+                    <label for="booking_deadline">Booking deadline <span class="optional-label">(optional)</span></label>
+                    <input type="datetime-local" id="booking_deadline" name="booking_deadline"
+                        value="<%= event.booking_deadline ? event.booking_deadline.replace(' ', 'T').slice(0,16) : '' %>">
+                    <p class="field-note">Must be in the future and before the session starts.</p>
+                </div>
+
+                <div class="field">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" value="<%= event.location %>" placeholder="Studio name or address">
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="duration_minutes">Duration (minutes)</label>
+                        <input type="number" id="duration_minutes" name="duration_minutes" min="0" value="<%= event.duration_minutes %>">
+                    </div>
+                </div>
+
+                <h2 class="form-card-title" style="margin-top: 2rem">Ticket Setup</h2>
+                <div class="ticket-grid">
+                    <div class="ticket-block">
+                        <h3 class="ticket-block-title">Full Price</h3>
+                        <div class="field">
+                            <label for="full_price_tickets">Tickets available</label>
+                            <input type="number" id="full_price_tickets" name="full_price_tickets" min="0" value="<%= event.full_price_tickets %>">
+                        </div>
+                        <div class="field">
+                            <label for="full_price_cost">Price per ticket (SGD)</label>
+                            <input type="number" id="full_price_cost" name="full_price_cost" min="0" step="0.01" value="<%= event.full_price_cost %>">
+                        </div>
+                    </div>
+                    <div class="ticket-block">
+                        <h3 class="ticket-block-title">Concession</h3>
+                        <div class="field">
+                            <label for="concession_tickets">Tickets available</label>
+                            <input type="number" id="concession_tickets" name="concession_tickets" min="0" value="<%= event.concession_tickets %>">
+                        </div>
+                        <div class="field">
+                            <label for="concession_cost">Price per ticket (SGD)</label>
+                            <input type="number" id="concession_cost" name="concession_cost" min="0" step="0.01" value="<%= event.concession_cost %>">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 2rem;">
+                    <button type="submit" name="action" value="save" class="btn btn-primary">Save Draft</button>
+                    <a href="/organiser" class="btn btn-ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <aside class="edit-side">
+        <div class="side-card">
+            <h3 class="side-card-title">Actions</h3>
+            <p class="side-card-text">Publish this event immediately, delete this draft, or return to the dashboard.</p>
+            <div class="side-card-actions">
+                <button type="submit" form="event-create-form" name="action" value="publish" class="btn btn-primary btn-block">Save &amp; Publish</button>
+                <button id="deleteDraft" type="button" class="btn btn-danger-ghost btn-block">Delete Draft</button>
+                <a href="/organiser" class="btn btn-ghost btn-block">Back to Dashboard</a>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var deleteBtn = document.getElementById('deleteDraft');
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function () {
+            if (!confirm('Delete this draft and return to the dashboard? This will not be saved.')) return;
+            window.location = '/organiser';
+        });
+    }
+});
+</script>
+</div>
+</section>
+
+<%- include('footer') %>

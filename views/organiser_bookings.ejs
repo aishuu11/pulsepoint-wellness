@@ -1,0 +1,65 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header">
+    <div class="container">
+        <p class="eyebrow">Bookings</p>
+        <h1 class="page-title">All Bookings</h1>
+        <p class="page-lead">Review every attendee booking and payment at a glance.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2 class="section-title">Latest Bookings</h2>
+            <div class="button-row">
+                <a href="/organiser/bookings/export" class="btn btn-primary">Download CSV</a>
+                <a href="/organiser" class="btn btn-ghost">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <% if (bookings.length > 0) { %>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Attendee</th>
+                            <th>Event</th>
+                            <th>Status</th>
+                            <th>Event Date</th>
+                            <th>Event Time</th>
+                            <th>Tickets (Full / Concession)</th>
+                            <th>Amount</th>
+                            <th>Booked At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% bookings.forEach(function(booking, index) { %>
+                            <tr>
+                                <td><%= index + 1 %></td>
+                                <td><%= booking.attendee_name %></td>
+                                <td><%= booking.event_title %></td>
+                                <td><span class="status-badge status-badge--<%= booking.status %>"><%= booking.status %></span></td>
+                                <td><%= formatDateDisplay(booking.event_date) %></td>
+                                <td><%= booking.event_time || 'TBC' %></td>
+                                <td><%= booking.full_price_qty %> Full / <%= booking.concession_qty %> Concession</td>
+                                <td>SGD $<%= booking.amount_paid.toFixed(2) %></td>
+                                <td><%= formatDateTimeDisplay(booking.booked_at) %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <h3>No bookings yet</h3>
+                <p>Once attendees reserve tickets, bookings will appear here.</p>
+            </div>
+        <% } %>
+    </div>
+</section>
+
+<%- include('footer') %>

@@ -1,0 +1,154 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header">
+    <div class="container">
+        <p class="eyebrow">Booking Dashboard</p>
+        <h1 class="page-title">Organiser Booking Insights</h1>
+        <p class="page-lead">See booking totals, manage status, and restore tickets when cancellations happen.</p>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container">
+        <div class="dashboard-grid">
+            <article class="metric-card">
+                <p class="metric-card-title">Total Bookings</p>
+                <p class="metric-card-value"><%= totals.total_bookings %></p>
+            </article>
+            <article class="metric-card">
+                <p class="metric-card-title">Confirmed Bookings</p>
+                <p class="metric-card-value"><%= totals.confirmed_bookings %></p>
+            </article>
+            <article class="metric-card">
+                <p class="metric-card-title">Cancelled Bookings</p>
+                <p class="metric-card-value"><%= totals.cancelled_bookings %></p>
+            </article>
+            <article class="metric-card">
+                <p class="metric-card-title">Total Paid</p>
+                <p class="metric-card-value">SGD $<%= totals.total_revenue.toFixed(2) %></p>
+            </article>
+        </div>
+        <div class="dashboard-grid dashboard-grid--notes">
+            <article class="metric-card metric-card--panel">
+                <p class="metric-card-title">Confirmed Tickets</p>
+                <p class="metric-card-value"><%= totals.confirmed_tickets %></p>
+            </article>
+            <article class="metric-card metric-card--panel">
+                <p class="metric-card-title">Total Tickets Booked</p>
+                <p class="metric-card-value"><%= totals.total_tickets %></p>
+            </article>
+            <article class="metric-card metric-card--panel">
+                <p class="metric-card-title">Search & Filters</p>
+                <p class="metric-card-note">Search by booking ID, attendee name, or event title. Filter by confirmed or cancelled.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <form class="booking-filter-form" method="GET" action="/organiser/booking-dashboard">
+            <div class="filter-row">
+                <input type="search" name="search" placeholder="Search booking ID, attendee or event" value="<%= currentSearch %>" />
+                <select name="status">
+                    <option value="" <%= !currentStatus ? 'selected' : '' %>>All statuses</option>
+                    <option value="confirmed" <%= currentStatus === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+                    <option value="cancelled" <%= currentStatus === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </form>
+    </div>
+    <div class="container">
+        <div class="section-head">
+            <h2 class="section-title">Bookings</h2>
+            <a href="/organiser" class="btn btn-ghost">Back to Dashboard</a>
+        </div>
+
+        <% if (bookings.length > 0) { %>
+            <div class="table-wrap">
+                <table class="table booking-dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Booking ID</th>
+                            <th>Attendee</th>
+                            <th>Event</th>
+                            <th>Tickets</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Booked At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% bookings.forEach(function(booking, index) { %>
+                            <tr class="booking-row booking-row--<%= booking.status %>">
+                                <td><%= index + 1 %></td>
+                                <td>
+                                    <div class="booking-cell-stack">
+                                        <span class="booking-cell-title">BK<%= booking.id.toString().padStart(4, '0') %></span>
+                                        <span class="booking-cell-subtle">Reference</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="booking-cell-stack">
+                                        <span class="booking-cell-title"><%= booking.attendee_name %></span>
+                                        <span class="booking-cell-subtle">Attendee</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="booking-cell-stack">
+                                        <span class="booking-cell-title"><%= booking.event_title %></span>
+                                        <span class="booking-cell-subtle">Event</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="booking-cell-stack">
+                                        <span class="booking-cell-title"><%= booking.full_price_qty %> Full / <%= booking.concession_qty %> Concession</span>
+                                        <span class="booking-cell-subtle">Ticket mix</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="booking-cell-stack">
+                                        <span class="booking-cell-title">SGD $<%= booking.amount_paid.toFixed(2) %></span>
+                                        <span class="booking-cell-subtle">Paid</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-badge--<%= booking.status %>">
+                                        <%= booking.status === 'cancelled' ? 'Cancelled' : 'Confirmed' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="booking-cell-stack">
+                                        <span class="booking-cell-title"><%= formatDateTimeDisplay(booking.booked_at) %></span>
+                                        <span class="booking-cell-subtle">Booked time</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <% if (booking.status === 'confirmed') { %>
+                                        <form action="/organiser/bookings/<%= booking.id %>/cancel" method="POST">
+                                            <button type="submit" class="btn btn-sm btn-danger-ghost">Cancel</button>
+                                        </form>
+                                    <% } else { %>
+                                        <span class="booking-action-pill booking-action-pill--cancelled">Cancelled</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <h3>No booking records found</h3>
+                <p>Bookings will appear here once attendees reserve tickets for your events.</p>
+            </div>
+        <% } %>
+    </div>
+</section>
+
+<%- include('footer') %>

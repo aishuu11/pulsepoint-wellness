@@ -1,0 +1,254 @@
+<%- include('head') %>
+<body class="revenue-page">
+<%- include('nav') %>
+
+<section class="page-header">
+    <div class="container">
+        <div class="page-header__content">
+            <div>
+                <p class="eyebrow">Revenue</p>
+                <h1 class="page-title">Revenue Dashboard</h1>
+                <p class="page-lead">Track ticket sales, event revenue, and your best performing events.</p>
+                <p class="page-lead page-lead--subtle">All figures are calculated from confirmed bookings only.</p>
+            </div>
+            <a href="/organiser" class="btn btn-ghost page-header__action">← Back to Dashboard</a>
+        </div>
+    </div>
+</section>
+
+<div class="performance-marquee" aria-hidden="true">
+    <div class="performance-marquee__track">
+        LIVE PERFORMANCE &nbsp;•&nbsp; CONFIRMED SALES ONLY &nbsp;•&nbsp; CAPACITY INTELLIGENCE &nbsp;•&nbsp; REVENUE MOMENTUM &nbsp;•&nbsp;
+        LIVE PERFORMANCE &nbsp;•&nbsp; CONFIRMED SALES ONLY &nbsp;•&nbsp; CAPACITY INTELLIGENCE &nbsp;•&nbsp; REVENUE MOMENTUM &nbsp;•&nbsp;
+    </div>
+</div>
+
+<section class="section section--soft revenue-section">
+    <div class="container">
+        <div class="revenue-block revenue-block--scoreboard">
+            <div class="section-head section-head--tight">
+                <h2 class="section-title">Top Metrics</h2>
+                <p class="section-lead">A quick snapshot of confirmed demand and performance.</p>
+            </div>
+            <div class="kpi-grid kpi-grid--four top-metrics">
+            <article class="kpi-card kpi-card--accent kpi-card--revenue">
+                <div class="kpi-card__head">
+                    <span class="kpi-badge kpi-badge--green">01</span>
+                    <span class="kpi-pill">Confirmed only</span>
+                </div>
+                <p class="kpi-card__eyebrow">Total Revenue</p>
+                <p class="kpi-card__value" data-counter="<%= summary.totalRevenue || 0 %>" data-counter-decimals="2" data-counter-prefix="SGD ">SGD 0.00</p>
+                <p class="kpi-card__meta">All confirmed bookings</p>
+            </article>
+            <article class="kpi-card kpi-card--accent kpi-card--bookings">
+                <div class="kpi-card__head">
+                    <span class="kpi-badge kpi-badge--gold">02</span>
+                    <span class="kpi-pill">Live count</span>
+                </div>
+                <p class="kpi-card__eyebrow">Total Bookings</p>
+                <p class="kpi-card__value" data-counter="<%= summary.totalBookings || 0 %>">0</p>
+                <p class="kpi-card__meta">Confirmed reservations</p>
+            </article>
+            <article class="kpi-card kpi-card--accent kpi-card--tickets">
+                <div class="kpi-card__head">
+                    <span class="kpi-badge kpi-badge--terra">03</span>
+                    <span class="kpi-pill">Full + concession</span>
+                </div>
+                <p class="kpi-card__eyebrow">Tickets Sold</p>
+                <p class="kpi-card__value" data-counter="<%= summary.totalTicketsSold || 0 %>">0</p>
+                <p class="kpi-card__meta">Tickets across all events</p>
+            </article>
+            <article class="kpi-card kpi-card--best">
+                <div class="kpi-card__head">
+                    <span class="kpi-badge kpi-badge--soft">04</span>
+                    <span class="kpi-pill">Best performer</span>
+                </div>
+                <p class="kpi-card__eyebrow">Best Seller</p>
+                <p class="kpi-card__value"><%= summary.bestSeller || 'No sales yet' %></p>
+                <p class="kpi-card__meta"><%= summary.bestSeller ? 'By confirmed tickets sold' : 'Starts after the first confirmed sale' %></p>
+            </article>
+            </div>
+        </div>
+
+        <div class="revenue-block revenue-block--insights">
+            <div class="section-head section-head--tight">
+                <h2 class="section-title">Quick Insights</h2>
+                <p class="section-lead">Short signals that help you spot momentum quickly.</p>
+            </div>
+            <div class="insights-grid">
+            <% (insights || []).slice(0, 3).forEach(function(insight, insightIndex) { %>
+                <article class="insight-card">
+                    <div class="insight-badge"><%= String(insightIndex + 1).padStart(2, '0') %></div>
+                    <div>
+                        <div class="insight-title"><%= insight.title %></div>
+                        <div class="insight-text"><%= insight.text %></div>
+                    </div>
+                </article>
+            <% }) %>
+            </div>
+        </div>
+
+        <div class="revenue-block revenue-block--today">
+            <div class="section-head section-head--tight">
+                <h2 class="section-title">Today’s Performance</h2>
+                <p class="section-lead">Bookings, revenue and ticket sales compared with yesterday.</p>
+            </div>
+            <div class="kpi-grid kpi-grid--three">
+            <article class="kpi-card trend-card">
+                <div class="trend-left">
+                    <div class="trend-badge">BK</div>
+                </div>
+                <div class="trend-main">
+                    <p class="kpi-card__eyebrow">Bookings Today</p>
+                    <p class="kpi-card__value"><%= todayMetrics.bookingsToday || 0 %></p>
+                    <p class="kpi-card__meta trend-meta">
+                        <span class="trend-indicator <%= (todayMetrics.bookingsDelta || 0) >= 0 ? 'up' : 'down' %>"><%= todayMetrics.bookingsComparisonText %></span>
+                    </p>
+                    <div class="mini-bar">
+                        <% const bYesterday = todayMetrics.bookingsYesterday || 0; const bToday = todayMetrics.bookingsToday || 0; const bMax = Math.max(bYesterday, bToday, 1); %>
+                        <div class="mini-bar-track">
+                            <div class="mini-bar-fill" style="width:<%= Math.round((bToday / bMax) * 100) %>%"></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="kpi-card trend-card">
+                <div class="trend-left">
+                    <div class="trend-badge">SG</div>
+                </div>
+                <div class="trend-main">
+                    <p class="kpi-card__eyebrow">Revenue Today</p>
+                    <p class="kpi-card__value">SGD <%= (todayMetrics.revenueToday || 0).toFixed(2) %></p>
+                    <p class="kpi-card__meta trend-meta">
+                        <span class="trend-indicator <%= (todayMetrics.revenueDelta || 0) >= 0 ? 'up' : 'down' %>"><%= todayMetrics.revenueComparisonText %></span>
+                    </p>
+                    <div class="mini-bar">
+                        <% const rYesterday = todayMetrics.revenueYesterday || 0; const rToday = todayMetrics.revenueToday || 0; const rMax = Math.max(rYesterday, rToday, 1); %>
+                        <div class="mini-bar-track">
+                            <div class="mini-bar-fill" style="width:<%= Math.round((rToday / rMax) * 100) %>%"></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="kpi-card trend-card">
+                <div class="trend-left">
+                    <div class="trend-badge">TK</div>
+                </div>
+                <div class="trend-main">
+                    <p class="kpi-card__eyebrow">Tickets Sold Today</p>
+                    <p class="kpi-card__value"><%= todayMetrics.ticketsToday || 0 %></p>
+                    <p class="kpi-card__meta trend-meta">
+                        <span class="trend-indicator <%= (todayMetrics.ticketsDelta || 0) >= 0 ? 'up' : 'down' %>"><%= todayMetrics.ticketsComparisonText %></span>
+                    </p>
+                    <div class="mini-bar">
+                        <% const tYesterday = todayMetrics.ticketsYesterday || 0; const tToday = todayMetrics.ticketsToday || 0; const tMax = Math.max(tYesterday, tToday, 1); %>
+                        <div class="mini-bar-track">
+                            <div class="mini-bar-fill" style="width:<%= Math.round((tToday / tMax) * 100) %>%"></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            </div>
+        </div>
+
+        <div class="revenue-block revenue-block--potential">
+            <div class="section-head section-head--tight">
+                <h2 class="section-title">Revenue Potential</h2>
+                <p class="section-lead">A wider view of earned revenue versus what remains possible from unsold seats.</p>
+            </div>
+            <div class="metric-card revenue-potential-wide">
+            <div class="rp-top">
+                <div class="rp-left">
+                    <div class="rp-line"><span class="muted">Earned so far:</span> <strong>SGD <%= (revenuePotential.earnedSoFar || 0).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                    <div class="rp-line"><span class="muted">Remaining possible revenue:</span> <strong>SGD <%= (revenuePotential.remainingPossible || 0).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                    <div class="rp-line"><span class="muted">Potential total:</span> <strong>SGD <%= (revenuePotential.totalPotential || (revenuePotential.earnedSoFar + revenuePotential.remainingPossible) || 0).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></strong></div>
+                </div>
+                <div class="rp-right">
+                    <div class="rp-meter">
+                        <% const earned = Number(revenuePotential.earnedSoFar || 0); const remaining = Number(revenuePotential.remainingPossible || 0); const total = Math.max(earned + remaining, 1); const earnedPct = Math.round((earned/total)*100); %>
+                        <div class="rp-track">
+                            <div class="rp-earned" style="width:<%= earnedPct %>%"></div>
+                            <div class="rp-remaining" style="width:<%= 100-earnedPct %>%"></div>
+                        </div>
+                        <div class="rp-meter-label">Earned <strong><%= earnedPct %>%</strong> of total potential</div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div class="revenue-block revenue-block--events">
+            <div class="section-head section-head--tight">
+                <h2 class="section-title">Revenue by Event</h2>
+                <p class="section-lead">Compare each event’s revenue contribution.</p>
+            </div>
+            <div class="metric-card">
+            <% if ((eventsPerformance || []).length > 0) { %>
+                <% const maxRev = Math.max(...eventsPerformance.map(e => e.revenue || 0), 1); %>
+                <div class="revenue-list">
+                    <p class="revenue-helper">Bars compare each event’s revenue against the highest earning event.</p>
+                    <% eventsPerformance.forEach(function(ev) { %>
+                        <div class="revenue-row">
+                            <div class="revenue-row-left">
+                                <div class="revenue-title"><%= ev.title %></div>
+                                <div class="revenue-sub"> <%= ev.ticketsSold %> tickets sold</div>
+                            </div>
+                            <div class="revenue-row-bar" aria-hidden>
+                                <div class="revenue-track">
+                                    <div class="revenue-fill" style="width:<%= maxRev ? Math.round(((ev.revenue || 0) / maxRev) * 100) : 0 %>%"></div>
+                                </div>
+                            </div>
+                            <div class="revenue-row-value"> <%= ev.revenue ? ('SGD ' + ev.revenue.toFixed(2)) : 'SGD 0.00' %> </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <p class="metric-card-note">No revenue data available.</p>
+            <% } %>
+            </div>
+        </div>
+
+        <!-- Upcoming events and event performance removed per request -->
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="revenue-block">
+            <div class="section-head section-head--tight section-head--split">
+                <div>
+                    <h2 class="section-title">Latest Booking Activity</h2>
+                    <p class="section-lead">A lightweight activity feed of the newest confirmed bookings.</p>
+                </div>
+                <a href="/organiser/booking-management" class="btn btn-ghost">View All Bookings</a>
+            </div>
+            <% if ((summary.recentBookings || []).length > 0) { %>
+            <div class="latest-feed metric-card">
+                <% (summary.recentBookings || []).forEach(function(booking) { %>
+                    <div class="feed-item">
+                        <div class="feed-dot" aria-hidden></div>
+                        <div class="feed-content">
+                            <div class="feed-main">
+                                <strong><%= booking.attendee_name %></strong> booked <%= booking.event_title %>
+                            </div>
+                            <div class="feed-meta">
+                                <span><%= ((Number(booking.full_price_qty)||0) + (Number(booking.concession_qty)||0)) %> tickets</span>
+                                <span>•</span>
+                                <span>SGD <%= (booking.amount_paid || 0).toFixed(2) %></span>
+                                <span>•</span>
+                                <span><%= formatDateTimeDisplay(booking.booked_at) %></span>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+            <% } else { %>
+                <p class="metric-card-note">No recent bookings to display.</p>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<%- include('footer') %>

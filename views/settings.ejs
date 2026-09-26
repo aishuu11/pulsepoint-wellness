@@ -1,0 +1,69 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header">
+    <div class="container">
+        <p class="eyebrow">Configuration</p>
+        <h1 class="page-title">Site Settings Page</h1>
+        <p class="page-lead">Update your site name, description, and display style.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="settings-wrap">
+            <form action="/settings/update" method="POST" class="form-card">
+                <h2 class="form-card-title">Site Information</h2>
+
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert--error"><%= error %></div>
+                <% } %>
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="alert alert--success"><%= success %></div>
+                <% } %>
+
+                <div class="field">
+                    <label for="name">Site Name</label>
+                    <input type="text" id="name" name="name" value="<%= settings.name %>" required>
+                </div>
+
+                <div class="field">
+                    <label for="description">Site Description</label>
+                    <textarea id="description" name="description" rows="3" maxlength="700" required><%= settings.description %></textarea>
+                    <p class="field-hint"><%= typeof descriptionWordCount !== 'undefined' ? descriptionWordCount : 0 %>/100 words</p>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="display_font_family">Display Font</label>
+                        <select id="display_font_family" name="display_font_family">
+                            <option value="Barlow Condensed" <%= settings.display_font_family === 'Barlow Condensed' ? 'selected' : '' %>>Barlow Condensed</option>
+                            <option value="Inter" <%= settings.display_font_family === 'Inter' ? 'selected' : '' %>>Inter</option>
+                            <option value="Georgia" <%= settings.display_font_family === 'Georgia' ? 'selected' : '' %>>Georgia</option>
+                            <option value="Times New Roman" <%= settings.display_font_family === 'Times New Roman' ? 'selected' : '' %>>Times New Roman</option>
+                        </select>
+                    </div>
+                    <div class="field field--inline">
+                        <label class="checkbox-row">
+                            <input type="checkbox" name="description_italic" value="1" <%= settings.description_italic ? 'checked' : '' %>>
+                            <span>Italic description</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-preview">
+                    <p class="field-hint">Last updated: <strong><%= lastModifiedText || 'Unknown' %></strong></p>
+                    <p class="settings-preview__sample" style="font-family: <%= settings.display_font_family ? `'${settings.display_font_family}'` : 'var(--font-serif)' %>; font-style: <%= settings.description_italic ? 'italic' : 'normal' %>"><%= settings.description %></p>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                    <a href="/organiser" class="btn btn-ghost">Back to Organiser Home Page</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<%- include('footer') %>

@@ -1,0 +1,65 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header">
+    <div class="container">
+        <p class="eyebrow">QR and reference verification</p>
+        <h1 class="page-title">Attendee Check-in</h1>
+        <p class="page-lead">Enter the booking reference shown with the attendee's QR confirmation. Each confirmed booking can be checked in once.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container checkin-layout">
+        <div class="form-card">
+            <h2 class="form-card-title">Find booking</h2>
+            <% if (error) { %><div class="alert alert--error"><%= error %></div><% } %>
+            <% if (success) { %><div class="alert alert--success"><%= success %></div><% } %>
+            <form method="GET" action="/organiser/check-in" class="checkin-search">
+                <div class="field">
+                    <label for="reference">Booking reference</label>
+                    <input id="reference" name="reference" value="<%= reference %>" placeholder="BK-000001" required autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary">Find booking</button>
+            </form>
+        </div>
+
+        <% if (booking) { %>
+            <article class="booking-card checkin-card">
+                <div class="checkin-card__head">
+                    <div>
+                        <p class="eyebrow">Booking found</p>
+                        <h2 class="booking-card-title"><%= booking.booking_reference %></h2>
+                    </div>
+                    <% if (booking.checked_in_at) { %>
+                        <span class="status-pill status-pill--success">Checked in</span>
+                    <% } else { %>
+                        <span class="status-pill status-pill--<%= booking.status === 'confirmed' ? 'limited' : 'danger' %>"><%= booking.status %></span>
+                    <% } %>
+                </div>
+                <div class="detail-list">
+                    <div class="detail-row"><span class="detail-label">Attendee</span><strong><%= booking.attendee_name %></strong></div>
+                    <div class="detail-row"><span class="detail-label">Class</span><strong><%= booking.event_title %></strong></div>
+                    <div class="detail-row"><span class="detail-label">Session</span><strong><%= formatDateDisplay(booking.event_date) %> · <%= booking.event_time || 'TBC' %></strong></div>
+                    <div class="detail-row"><span class="detail-label">Tickets</span><strong><%= booking.full_price_qty + booking.concession_qty %></strong></div>
+                    <% if (booking.checked_in_at) { %>
+                        <div class="detail-row"><span class="detail-label">Checked in</span><strong><%= formatDateTimeDisplay(booking.checked_in_at) %></strong></div>
+                    <% } %>
+                </div>
+                <% if (booking.status === 'confirmed' && !booking.checked_in_at) { %>
+                    <form method="POST" action="/organiser/check-in">
+                        <input type="hidden" name="reference" value="<%= booking.booking_reference %>">
+                        <button type="submit" class="btn btn-primary btn-block">Confirm check-in</button>
+                    </form>
+                <% } else if (booking.checked_in_at) { %>
+                    <p class="checkin-note">Duplicate check-in is blocked for this booking.</p>
+                <% } else { %>
+                    <p class="checkin-note checkin-note--danger">Cancelled bookings cannot be checked in.</p>
+                <% } %>
+            </article>
+        <% } %>
+    </div>
+</section>
+
+<%- include('footer') %>

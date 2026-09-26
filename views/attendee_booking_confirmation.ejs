@@ -1,0 +1,74 @@
+<%- include('head') %>
+<body>
+<%- include('nav') %>
+
+<section class="page-header page-header--soft">
+    <div class="container">
+        <p class="eyebrow">Booking Confirmed</p>
+        <h1 class="page-title"><%= booking.event_title %></h1>
+        <div class="alert alert--success">Payment simulated successfully. No real email was sent.</div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="confirmation-grid">
+            <section class="confirmation-panel">
+                <h2 class="section-title">Booking summary</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Booking ID</span>
+                        <span class="info-value"><%= booking.id %></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Booking reference</span>
+                        <span class="info-value"><%= booking.booking_reference || ('BK-' + String(booking.id).padStart(6, '0')) %></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Attendee</span>
+                        <span class="info-value"><%= booking.attendee_name %></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Tickets</span>
+                        <span class="info-value"><%= booking.full_price_qty + booking.concession_qty %></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Full price tickets</span>
+                        <span class="info-value"><%= booking.full_price_qty %></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Concession tickets</span>
+                        <span class="info-value"><%= booking.concession_qty %></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Amount paid</span>
+                        <span class="info-value">SGD $<%= Number(booking.amount_paid || 0).toFixed(2) %></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Payment method</span>
+                        <span class="info-value"><%= booking.payment_method || 'Card' %> ending <%= booking.payment_last4 || '0000' %></span>
+                    </div>
+                </div>
+
+                <div style="margin-top:24px">
+                    <h3 class="section-title">Event details</h3>
+                    <p class="section-copy"><strong>Date:</strong> <%= formatDateDisplay(booking.event_date) %></p>
+                    <p class="section-copy"><strong>Time:</strong> <%= booking.event_time || 'TBC' %></p>
+                    <p class="section-copy"><strong>Location:</strong> <%= booking.event_location || 'TBC' %></p>
+                </div>
+            </section>
+
+            <aside class="booking-card confirmation-card">
+                <h2 class="booking-card-title">QR code</h2>
+                <p class="muted">Present this QR code at arrival. It opens the protected organiser check-in page for this booking.</p>
+                <div class="confirmation-qr-wrap">
+                    <img src="<%= qrCodeDataUrl %>" alt="Booking QR code" class="confirmation-qr">
+                </div>
+                <a href="/attendee/dashboard" class="btn btn-primary btn-block">Go to dashboard</a>
+                <a href="/attendee" class="btn btn-ghost btn-block" style="margin-top:10px">Browse more events</a>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<%- include('footer') %>

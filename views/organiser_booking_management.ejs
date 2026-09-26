@@ -1,0 +1,285 @@
+<%- include('head') %>
+<body class="forest-theme booking-management-page">
+<%- include('nav') %>
+
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">Booking Management</h1>
+        <p class="page-lead">View, filter, and manage all attendee bookings and payments.</p>
+    </div>
+</section>
+
+<div class="booking-marquee" aria-hidden="true">
+    <div class="booking-marquee__track">
+        BOOKING CONTROL &nbsp;•&nbsp; LIVE OCCUPANCY &nbsp;•&nbsp; CHECK-IN READY &nbsp;•&nbsp; CAPACITY TRACKING &nbsp;•&nbsp;
+        BOOKING CONTROL &nbsp;•&nbsp; LIVE OCCUPANCY &nbsp;•&nbsp; CHECK-IN READY &nbsp;•&nbsp; CAPACITY TRACKING &nbsp;•&nbsp;
+    </div>
+</div>
+
+<section class="section section--soft">
+    <div class="container">
+        <% if (checkinSuccess) { %><div class="alert alert--success">Attendee checked in successfully.</div><% } %>
+        <% if (checkinError) { %><div class="alert alert--error"><%= checkinError %></div><% } %>
+        <%
+            const totalBookings = Number(totals.total_bookings || 0);
+            const confirmedBookings = Number(totals.confirmed_bookings || 0);
+            const cancelledBookings = Number(totals.cancelled_bookings || 0);
+            const totalTickets = Number(totals.total_tickets || 0);
+            const confirmedRate = totalBookings > 0 ? (confirmedBookings / totalBookings) * 100 : 0;
+        %>
+        <div class="kpi-grid">
+            <article class="kpi-card kpi-card--booking-total">
+                <span class="booking-metric-index">01</span>
+                <p class="kpi-card__eyebrow">Total bookings</p>
+                <p class="kpi-card__value" data-counter="<%= totalBookings %>">0</p>
+                <p class="kpi-card__meta">All reservations this far</p>
+            </article>
+            <article class="kpi-card kpi-card--booking-confirmed">
+                <span class="booking-metric-index">02</span>
+                <p class="kpi-card__eyebrow">Confirmed</p>
+                <p class="kpi-card__value" data-counter="<%= confirmedBookings %>">0</p>
+                <p class="kpi-card__meta"><%= confirmedRate.toFixed(0) %>% of bookings</p>
+            </article>
+            <article class="kpi-card kpi-card--booking-cancelled">
+                <span class="booking-metric-index">03</span>
+                <p class="kpi-card__eyebrow">Cancelled</p>
+                <p class="kpi-card__value" data-counter="<%= cancelledBookings %>">0</p>
+                <p class="kpi-card__meta">Needs follow-up when needed</p>
+            </article>
+            <article class="kpi-card kpi-card--booking-tickets">
+                <span class="booking-metric-index">04</span>
+                <p class="kpi-card__eyebrow">Tickets booked</p>
+                <p class="kpi-card__value" data-counter="<%= totalTickets %>">0</p>
+                <p class="kpi-card__meta">Full and concession seats</p>
+            </article>
+        </div>
+
+        <div class="insight-grid">
+            <article class="kpi-card kpi-card--neutral insight-card occupancy-card">
+                <% const occPercent = totalCapacitySeats > 0 ? Math.round((totalFilledSeats / totalCapacitySeats) * 100) : 0; %>
+                <div class="occupancy-card__header">
+                    <div>
+                        <p class="kpi-card__eyebrow">Occupancy Overview</p>
+                        <p class="kpi-card__meta occupancy-card__subtitle">Overall ticket occupancy across published events</p>
+                    </div>
+                </div>
+
+                <div class="occupancy-card__main">
+                    <div class="occupancy-card__summary">
+                        <p class="occupancy-card__percent-large"><%= occPercent %>%</p>
+                        <p class="occupancy-card__sold"><%= totalFilledSeats %> / <%= totalCapacitySeats %> tickets sold</p>
+                    </div>
+                    <div class="occupancy-card__meter-wrap">
+                        <div class="occupancy-summary occupancy-summary--large">
+                            <div class="occupancy-summary__meter">
+                                <div class="occupancy-summary__fill" style="width: <%= Math.min(100, occPercent) %>%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="occupancy-card__breakdown">
+                    <h4 class="occupancy-breakdown__heading">Event breakdown</h4>
+                    <% if (occupancyItems && occupancyItems.length > 0) { %>
+                        <div class="occupancy-list">
+                        <% occupancyItems.forEach(function(item) { %>
+                            <div class="occupancy-row">
+                                <div class="occupancy-row__label"><%= item.title %></div>
+                                <div class="occupancy-row__track">
+                                    <div class="occupancy-row__fill" style="width: <%= item.fillPercent %>%;"></div>
+                                </div>
+                                <div class="occupancy-row__value"><%= item.filled %> / <%= item.totalCapacity %></div>
+                            </div>
+                        <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="kpi-card__meta">No ticket-capacity data is available yet.</p>
+                    <% } %>
+                </div>
+            </article>
+
+            <article id="calendar-card" class="calendar-card">
+                <div class="calendar-card__head calendar-card__head--controls">
+                    <a href="/organiser/booking-management?calendarMonth=<%= prevMonth %>&calendarYear=<%= prevYear %>&search=<%= encodeURIComponent(search || '') %>&status=<%= status || '' %>&range=<%= range || '' %><%= selectedDate ? '&date=' + selectedDate : '' %>#calendar-card" class="calendar-nav" id="calendar-prev">◀</a>
+                    <div>
+                        <p class="kpi-card__eyebrow">Upcoming bookings</p>
+                        <h3><%= formatDateDisplay(new Date(calendarYear, calendarMonth, 1)) %></h3>
+                    </div>
+                    <a href="/organiser/booking-management?calendarMonth=<%= nextMonth %>&calendarYear=<%= nextYear %>&search=<%= encodeURIComponent(search || '') %>&status=<%= status || '' %>&range=<%= range || '' %><%= selectedDate ? '&date=' + selectedDate : '' %>#calendar-card" class="calendar-nav" id="calendar-next">▶</a>
+                </div>
+                <span class="insight-pill"><%= selectedDate ? 'Selected ' + selectedDateFormatted : monthEventCount + ' event' + (monthEventCount === 1 ? '' : 's') %></span>
+                <div class="mini-calendar">
+                    <% ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(function(label) { %>
+                        <span class="mini-calendar__label"><%= label %></span>
+                    <% }) %>
+                    <% calendarDays.forEach(function(day) { %>
+                        <a href="/organiser/booking-management?date=<%= day.dateKey %>&calendarMonth=<%= calendarMonth %>&calendarYear=<%= calendarYear %>&search=<%= encodeURIComponent(search || '') %>&status=<%= status || '' %>&range=<%= range || '' %>#calendar-card" class="mini-calendar__day <%= day.isCurrentMonth ? '' : 'mini-calendar__day--muted' %> <%= selectedDate === day.dateKey ? 'mini-calendar__day--selected' : '' %>">
+                            <span class="mini-calendar__day-number"><%= day.day %></span>
+                            <% if (day.dotType) { %>
+                                <span class="mini-calendar__dot mini-calendar__dot--<%= day.dotType %>" aria-hidden="true"></span>
+                            <% } %>
+                        </a>
+                    <% }) %>
+                </div>
+                <div class="calendar-details">
+                    <% if (selectedDate) { %>
+                        <% if (selectedDateEvents && selectedDateEvents.length > 0) { %>
+                            <% selectedDateEvents.forEach(function(event) { %>
+                                <div class="calendar-detail calendar-detail--event">
+                                    <div class="calendar-detail__header">
+                                        <div>
+                                            <span class="calendar-detail__date"><%= selectedDateFormatted %></span>
+                                            <strong><%= event.eventTitle %></strong>
+                                            <span class="calendar-detail__time"><%= event.eventTime %></span>
+                                        </div>
+                                        <span class="calendar-detail__tickets"><%= event.bookedTickets %> booked</span>
+                                    </div>
+                                    <div class="calendar-detail__list">
+                                        <div class="calendar-detail__line"><strong><%= event.seatsLeft %></strong> seats left</div>
+                                        <div class="calendar-detail__line"><strong><%= event.totalCapacity %></strong> seat capacity</div>
+                                    </div>
+                                    <a href="#bookings-table" class="btn btn-primary btn-calendar-cta">View booking</a>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="calendar-detail calendar-detail--empty">
+                                <strong>No events on <%= selectedDateFormatted || selectedDate %></strong>
+                                <span>There are no bookings or events scheduled for this date yet.</span>
+                                <a href="/organiser/events/new" class="btn btn-primary btn-calendar-cta">Add an event</a>
+                            </div>
+                        <% } %>
+                    <% } else { %>
+                        <div class="calendar-detail calendar-detail--empty">
+                            <strong>Select a highlighted date</strong>
+                            <span>Tap any highlighted day to view available events and seats.</span>
+                        </div>
+                    <% } %>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <!-- Filters & Actions -->
+        <div class="section-head">
+            <h2 class="section-title">All Bookings</h2>
+            <div class="button-row">
+                <a href="/organiser/check-in" class="btn btn-secondary">Open check-in desk</a>
+                <a href="/organiser/bookings/export" class="btn btn-primary">Download CSV</a>
+                <a href="/organiser" class="btn btn-ghost">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-panel">
+            <form method="GET" action="/organiser/booking-management#bookings-table" class="filter-form">
+                <div class="filter-field">
+                    <label for="search">Search bookings</label>
+                    <input 
+                        id="search"
+                        type="text" 
+                        name="search" 
+                        placeholder="Search by attendee or event..." 
+                        value="<%= search || '' %>"
+                    >
+                </div>
+                <div class="filter-field">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="">All statuses</option>
+                        <option value="confirmed" <%= status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+                        <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">Apply filters</button>
+                    <a href="/organiser/booking-management#bookings-table" class="btn btn-ghost">Reset</a>
+                </div>
+            </form>
+            <div class="filter-pill-list">
+                <a href="/organiser/booking-management?range=&status=<%= status || '' %>&search=<%= encodeURIComponent(search || '') %>#bookings-table" class="filter-pill <%= !range ? 'filter-pill--active' : '' %>">All</a>
+                <a href="/organiser/booking-management?range=today&status=<%= status || '' %>&search=<%= encodeURIComponent(search || '') %>#bookings-table" class="filter-pill <%= range === 'today' ? 'filter-pill--active' : '' %>">Today</a>
+                <a href="/organiser/booking-management?range=this_week&status=<%= status || '' %>&search=<%= encodeURIComponent(search || '') %>#bookings-table" class="filter-pill <%= range === 'this_week' ? 'filter-pill--active' : '' %>">This Week</a>
+                <a href="/organiser/booking-management?range=this_month&status=<%= status || '' %>&search=<%= encodeURIComponent(search || '') %>#bookings-table" class="filter-pill <%= range === 'this_month' ? 'filter-pill--active' : '' %>">This Month</a>
+            </div>
+            <% if (search || status || range) { %>
+                <div class="filter-summary">
+                    <strong>Showing</strong> <%= bookingsTable.length %> booking<%= bookingsTable.length === 1 ? '' : 's' %>
+                    <% if (status) { %> · <%= status.charAt(0).toUpperCase() + status.slice(1) %><% } %>
+                    <% if (range) { %> · <%= range === 'today' ? 'Today' : range === 'this_week' ? 'This Week' : range === 'this_month' ? 'This Month' : 'All' %><% } %>
+                    <% if (search) { %> · matching "<%= search %>"<% } %>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Bookings Table -->
+        <% if (bookingsTable.length > 0) { %>
+            <div id="bookings-table" class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Attendee</th>
+                            <th>Event</th>
+                            <th>Status</th>
+                            <th>Event Date</th>
+                            <th>Event Time</th>
+                            <th>Tickets (Full / Concession)</th>
+                            <th>Amount</th>
+                            <th>Booked At</th>
+                            <th>Check-in</th>
+                            <th>Cancel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% bookingsTable.forEach(function(booking, index) { %>
+                            <tr>
+                                <td><%= index + 1 %></td>
+                                <td><%= booking.attendee_name %></td>
+                                <td><%= booking.event_title %></td>
+                                <td><span class="status-badge status-badge--<%= booking.status %>"><%= booking.status.toUpperCase() %></span></td>
+                                <td><%= formatDateDisplay(booking.event_date) %></td>
+                                <td><%= booking.event_time ? booking.event_time : 'TBC' %></td>
+                                <td><%= booking.full_price_qty %> Full / <%= booking.concession_qty %> Concession</td>
+                                <td>SGD $<%= booking.amount_paid.toFixed(2) %></td>
+                                <td><%= formatDateTimeDisplay(booking.booked_at) %></td>
+                                <td>
+                                    <% if (booking.checked_in_at) { %>
+                                        <span class="status-pill status-pill--success">Checked in</span>
+                                        <small class="booking-cell-subtle"><%= formatDateTimeDisplay(booking.checked_in_at) %></small>
+                                    <% } else if (booking.status === 'confirmed') { %>
+                                        <form method="POST" action="/organiser/bookings/<%= booking.id %>/check-in">
+                                            <button type="submit" class="btn btn-sm btn-primary">Check in</button>
+                                        </form>
+                                    <% } else { %>
+                                        <span class="booking-cell-subtle">Unavailable</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (booking.status === 'confirmed') { %>
+                                        <form method="POST" action="/organiser/bookings/<%= booking.id %>/cancel" style="display: inline;">
+                                            <button type="submit" class="btn btn-ghost" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel</button>
+                                        </form>
+                                    <% } else { %>
+                                        <span style="color: #999;">—</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <h3>No bookings found</h3>
+                <p><%= search || status ? 'No bookings match your filters. Try adjusting your search.' : 'Once attendees reserve tickets, bookings will appear here.' %></p>
+            </div>
+        <% } %>
+    </div>
+</section>
+
+<%- include('footer') %>
+</body>
+</html>

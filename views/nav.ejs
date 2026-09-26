@@ -1,0 +1,37 @@
+<header class="site-header">
+    <div class="container header-inner">
+        <a href="/" class="brand">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12h4l2.2-5 3.4 10 2.7-7 2 2H22"/>
+                </svg>
+            </span>
+            <span class="brand-text"><%= locals.siteSettings ? siteSettings.name : 'PulsePoint Wellness' %></span>
+        </a>
+        <nav class="site-nav">
+            <% if (currentUser) { %>
+                <a href="/organiser" class="nav-link">Organiser Home Page</a>
+                <a href="/attendee" class="nav-link">Attendee Home Page</a>
+                <a href="/organiser/booking-management" class="nav-link">Bookings</a>
+                <a href="/organiser/check-in" class="nav-link">Check-in</a>
+                <a href="/organiser/revenue" class="nav-link">Performance</a>
+                <a href="/settings" class="nav-link">Settings</a>
+                <form action="/organiser/logout" method="POST" class="nav-form">
+                    <button type="submit" class="nav-link nav-link--button">Logout</button>
+                </form>
+            <% } else if (currentAttendee) { %>
+                <a href="/attendee" class="nav-link">Attendee Home Page</a>
+                <a href="/attendee/dashboard" class="nav-link">Attendee Dashboard</a>
+                <form action="/attendee/logout" method="POST" class="nav-form">
+                    <button type="submit" class="nav-link nav-link--button">Logout</button>
+                </form>
+            <% } else { %>
+                <a href="/" class="nav-link">Home</a>
+                <a href="/attendee" class="nav-link">Attendee Home Page</a>
+                <a href="/attendee/login" class="nav-link">Attendee Login</a>
+                <a href="/organiser/login" class="nav-link">Organiser Login</a>
+                <a href="/settings" class="nav-link">Settings</a>
+            <% } %>
+        </nav>
+    </div>
+</header>
